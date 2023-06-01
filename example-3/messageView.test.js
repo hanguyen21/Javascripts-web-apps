@@ -32,4 +32,24 @@ describe('MessageView', () => {
     // Assert the message is hiden
     expect(document.querySelector('#message')).toBeNull();
   });
+
+  it('takes the message input and displays on thw web page',() => {
+    // Arrange
+    document.body.innerHTML = fs.readFileSync('./index.html');
+
+    const view = new MessageView();
+    // Act
+    const buttonEl = document.querySelector('#show-message-button');
+    const inputEl = document.querySelector('#message-input');
+    inputEl.value = 'Some text in there'
+
+    
+    buttonEl.click();
+
+   
+    // Assert
+    
+    expect(document.querySelector('#message')).not.toBeNull();
+    expect(document.querySelector('#message').innerText).toEqual('Some text in there')
+  });
 });
