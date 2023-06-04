@@ -16,6 +16,9 @@ class NotesModel {
         this.notes = []
     }
 
+    setNotes(notes) {
+        this.note = notes
+    }
 
 }
 

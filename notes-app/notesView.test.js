@@ -5,15 +5,28 @@
 const fs = require('fs');
 const NotesModel = require('./notesModel');
 const NotesView = require('./notesView'); 
+const NotesClient= require('./notesClient'); 
+
+jest.mock('./notesClient');
+// jest.mock('./notesModel')
+require('jest-fetch-mock').enableFetchMocks()
 
 
 describe('Notes view', () => {
+  let model;
+  let client;
+  let view;
+
+  beforeEach(() => {
+    document.body.innerHTML = fs.readFileSync('./index.html');
+    model = new NotesModel();
+    client = new NotesClient();
+    view = new NotesView(model, client);
+    NotesClient.mockClear();
+  });
+
     it('displays two notes', () => {
-      document.body.innerHTML = fs.readFileSync('./index.html');
-  
-      // 1. Setting up model and view
-      const model = new NotesModel();
-      const view = new NotesView(model);
+      
       model.addNote('A first note');
       model.addNote('Another one');
       
@@ -25,13 +38,8 @@ describe('Notes view', () => {
     });
 
     it('adds a new note',() => {
-      // Arrange
-      document.body.innerHTML = fs.readFileSync('./index.html');
-      const model = new NotesModel();
-      const view = new NotesView(model);
-      
-      
-      // Act
+            
+            // Act
       const input = document.querySelector('#add-note-input');
       input.value = 'My new amazing test note';
 
@@ -45,14 +53,7 @@ describe('Notes view', () => {
     });
     
     it('clear the list of previous notes before displaying',() => {
-      // Arrange
-      document.body.innerHTML = fs.readFileSync('./index.html');
-      const model = new NotesModel();
-      const view = new NotesView(model);
-      
-    
-      // Act
-      
+     
       model.addNote('one');
       model.addNote('two');
     
@@ -62,7 +63,47 @@ describe('Notes view', () => {
 
       // Assert
       expect(document.querySelectorAll('div.note').length).toEqual(2);
-      
   
     });
+
+    // describe('displayNotesFromApi()', () => {
+    //   xit('loads data from the API and populates the model with it ', () => {
+    //      const notesModelDouble = {
+    //       setNotes: () => {
+    //         ['test note']
+    //       }
+    //      }
+
+    //      const mockClient = {
+    //       loadNotes : jest.fn(),
+    //      }
+
+    //      mockClient.fetch.mockImplementationOnce() = {
+
+    //      }
+
+    //     // fetch('http://localhost:3000/notes')
+    //   })
+    // })
+
+    xit('displays notes from Api', () => {
+
+      // mock client methods first
+      const mockData = ['mock api note'];
+      // this replaces loadNotes with a new function that takes a callback
+      // and returns a promise that is using the mockData in the
+      // callback. So it's very similar to the real loadNotes, but it
+      // skips the fetch to make the test deterministic.
+      client.loadNotes.mockImplementation((callback) => {
+          return Promise.resolve(callback(mockData));
+      });
+  
+        return view.displayNotesFromApi()
+            .then(() => {
+                const notes = document.querySelectorAll('div.note');
+                expect(notes.length).toBe(1);
+                expect(notes.item(0).innerText).toBe('mock api note');
+            });
+  })
+  
   });
